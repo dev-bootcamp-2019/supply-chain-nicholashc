@@ -104,23 +104,33 @@ contract TestSupplyChain {
 
     // shipItem
 
-    // // test for calls that are made by not the seller
-    // function testShipItemNotFromSeller() {
-    //   //instatiate
-    //   SupplyChain s = new SupplyChain();
-    //   //add item
-    //   s.addItem("first item", 100);
-    //   //test logic
-    //   address foo = s.items[0].sender; //@nhc how can I access values in a struct?
-    //   //check assertion 
-    //   //Assert.equal(this, expected, "msg.sender should be the sender");
-    // }
-    // // test for trying to ship an item that is not marked Sold
-    // function testShipItemNotYetSold() {
-    //   //instatiate
-    //   SupplyChain s = new SupplyChain();
-    //   //test logic
-    // }
+    // test for calls that are made by not the seller
+    function testShipItemNotFromSeller() {
+      //instatiate
+      SupplyChain s = new SupplyChain();
+      //add item
+      s.addItem("first item", 100);
+      //establish expected address (deconstructed tuple required here) 
+      (,,,,address expected,) = s.fetchItem(0); 
+      //check assertion 
+      Assert.equal(address(this), expected, "msg.sender should be the sender");
+    }
+
+    // test for trying to ship an item that is not marked Sold
+    function testShipItemNotYetSold() {
+      //instatiate
+      SupplyChain s = new SupplyChain();
+      //add item
+      s.addItem("first item", 100);
+      //attempt to ship item
+      bytes memory functionSignature = padFunctionWithOneByteArgument("shipItem(uint256)", 0x00);
+      bool attemptedShip = s.call(functionSignature);
+      //establish expected value
+      (,,,uint expected,,) = s.fetchItem(0); //expected state == 0 == State.ForSale
+      //check assetions
+      Assert.isFalse(attemptedShip, "shipItem() should fail");
+      Assert.equal(0, expected, "the state should be ForSale");
+    }
 
     // // receiveItem
 
@@ -137,5 +147,21 @@ contract TestSupplyChain {
     //   //test logic
 
     // }
+
+    //utility function to encode function signature 
+    function calcFunctionSignature(string _sig) internal pure returns (bytes4) {
+      return bytes4(keccak256(abi.encodePacked(_sig)));
+    }
+
+    function padFunctionWithOneByteArgument(string _sig, bytes1 _arg) internal pure returns (bytes) {
+      bytes31 padding31bytes = 0x00000000000000000000000000000000000000000000000000000000000000;
+      return abi.encodePacked(calcFunctionSignature(_sig), padding31bytes, _arg); 
+    }
+
+}
+
+contract proxyTester {
+
+    //add logic to call SupplyChain.sol from another address 
 
 }
