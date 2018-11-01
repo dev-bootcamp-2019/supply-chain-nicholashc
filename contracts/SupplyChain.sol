@@ -170,4 +170,10 @@ contract SupplyChain {
     return (name, sku, price, state, seller, buyer);
   }
 
+  //function to test onlyOwner modifier
+  function accessByOwner() public view onlyOwner() returns(bool) {
+    //will only return if modifier conditions are met 
+    return true;
+  }
+
 }
