@@ -16,14 +16,22 @@ contract('SupplyChain', function(accounts) {
         var eventEmitted = false
 
         var event = supplyChain.ForSale()
+        
+         /* Commented- unused because it doesn't work on Travis
+        var event = supplyChain.ForSale()
         await event.watch((err, res) => {
             sku = res.args.sku.toString(10)
             eventEmitted = true
         })
-
+*/
         const name = "book"
 
-        await supplyChain.addItem(name, price, {from: alice})
+        const tx = await supplyChain.addItem(name, price, {from: alice})
+
+        if (tx.logs[0].event === "ForSale") {
+                sku = tx.logs[0].args.sku.toString(10)
+                eventEmitted = true
+        }
 
         const result = await supplyChain.fetchItem.call(sku)
 
@@ -40,11 +48,11 @@ contract('SupplyChain', function(accounts) {
 
         var eventEmitted = false
 
-        var event = supplyChain.Sold()
-        await event.watch((err, res) => {
-            sku = res.args.sku.toString(10)
-            eventEmitted = true
-        })
+        // var event = supplyChain.Sold()
+        // await event.watch((err, res) => {
+        //     sku = res.args.sku.toString(10)
+        //     eventEmitted = true
+        // })
 
         const amount = web3.toWei(2, "ether")
 
@@ -52,6 +60,11 @@ contract('SupplyChain', function(accounts) {
         var bobBalanceBefore = await web3.eth.getBalance(bob).toNumber()
 
         await supplyChain.buyItem(sku, {from: bob, value: amount})
+
+        if (tx.logs[0].event === "Sold") {
+                sku = tx.logs[0].args.sku.toString(10)
+                eventEmitted = true
+        }
 
         var aliceBalanceAfter = await web3.eth.getBalance(alice).toNumber()
         var bobBalanceAfter = await web3.eth.getBalance(bob).toNumber()
@@ -70,15 +83,20 @@ contract('SupplyChain', function(accounts) {
 
         var eventEmitted = false
 
-        var event = supplyChain.Shipped()
-        await event.watch((err, res) => {
-            sku = res.args.sku.toString(10)
-            eventEmitted = true
-        })
+        // var event = supplyChain.Shipped()
+        // await event.watch((err, res) => {
+        //     sku = res.args.sku.toString(10)
+        //     eventEmitted = true
+        // })
 
         await supplyChain.shipItem(sku, {from: alice})
 
         const result = await supplyChain.fetchItem.call(sku)
+
+        if (tx.logs[0].event === "Shipped") {
+                sku = tx.logs[0].args.sku.toString(10)
+                eventEmitted = true
+        }
 
         assert.equal(eventEmitted, true, 'adding an item should emit a Shipped event')
         assert.equal(result[3].toString(10), 2, 'the state of the item should be "Shipped", which should be declared third in the State Enum')
