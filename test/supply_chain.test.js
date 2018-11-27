@@ -17,20 +17,21 @@ contract('SupplyChain', function(accounts) {
 
         var event = supplyChain.ForSale()
         
-         /* Commented- unused because it doesn't work on Travis
-        var event = supplyChain.ForSale()
-        await event.watch((err, res) => {
-            sku = res.args.sku.toString(10)
-            eventEmitted = true
-        })
-*/
+        // unused because it doesn't pass tests on travis-ci
+        //
+        // await event.watch((err, res) => {
+        //     sku = res.args.sku.toString(10)
+        //     eventEmitted = true
+        // })
+        
         const name = "book"
 
         const tx = await supplyChain.addItem(name, price, {from: alice})
 
+        // refactored to pass travis-ci
         if (tx.logs[0].event === "ForSale") {
-                sku = tx.logs[0].args.sku.toString(10)
-                eventEmitted = true
+            sku = tx.logs[0].args.sku.toString(10)
+            eventEmitted = true
         }
 
         const result = await supplyChain.fetchItem.call(sku)
@@ -48,7 +49,10 @@ contract('SupplyChain', function(accounts) {
 
         var eventEmitted = false
 
-        // var event = supplyChain.Sold()
+        var event = supplyChain.Sold()
+        
+        // unused because it doesn't pass tests on travis-ci
+        //
         // await event.watch((err, res) => {
         //     sku = res.args.sku.toString(10)
         //     eventEmitted = true
@@ -59,17 +63,18 @@ contract('SupplyChain', function(accounts) {
         var aliceBalanceBefore = await web3.eth.getBalance(alice).toNumber()
         var bobBalanceBefore = await web3.eth.getBalance(bob).toNumber()
 
-        await supplyChain.buyItem(sku, {from: bob, value: amount})
-
-        if (tx.logs[0].event === "Sold") {
-                sku = tx.logs[0].args.sku.toString(10)
-                eventEmitted = true
-        }
+        const tx = await supplyChain.buyItem(sku, {from: bob, value: amount})
 
         var aliceBalanceAfter = await web3.eth.getBalance(alice).toNumber()
         var bobBalanceAfter = await web3.eth.getBalance(bob).toNumber()
 
         const result = await supplyChain.fetchItem.call(sku)
+
+        // refactored to pass travis-ci tests
+        if (tx.logs[0].event === "Sold") {
+            sku = tx.logs[0].args.sku.toString(10)
+            eventEmitted = true
+        }
 
         assert.equal(result[3].toString(10), 1, 'the state of the item should be "Sold", which should be declared second in the State Enum')
         assert.equal(result[5], bob, 'the buyer address should be set bob when he purchases an item')
@@ -83,19 +88,23 @@ contract('SupplyChain', function(accounts) {
 
         var eventEmitted = false
 
-        // var event = supplyChain.Shipped()
+        var event = supplyChain.Shipped()
+
+        // unused because it doesn't pass tests on travis-ci
+        //
         // await event.watch((err, res) => {
         //     sku = res.args.sku.toString(10)
         //     eventEmitted = true
         // })
 
-        await supplyChain.shipItem(sku, {from: alice})
+        const tx =await supplyChain.shipItem(sku, {from: alice})
 
         const result = await supplyChain.fetchItem.call(sku)
 
+        // refactored to pass travis-ci tests
         if (tx.logs[0].event === "Shipped") {
-                sku = tx.logs[0].args.sku.toString(10)
-                eventEmitted = true
+            sku = tx.logs[0].args.sku.toString(10)
+            eventEmitted = true
         }
 
         assert.equal(eventEmitted, true, 'adding an item should emit a Shipped event')
@@ -108,14 +117,23 @@ contract('SupplyChain', function(accounts) {
         var eventEmitted = false
 
         var event = supplyChain.Received()
-        await event.watch((err, res) => {
-            sku = res.args.sku.toString(10)
-            eventEmitted = true
-        })
+        
+        // unused because it doesn't pass tests on travis-ci
+        //
+        // await event.watch((err, res) => {
+        //     sku = res.args.sku.toString(10)
+        //     eventEmitted = true
+        // })
 
-        await supplyChain.receiveItem(sku, {from: bob})
+        const tx = await supplyChain.receiveItem(sku, {from: bob})
 
         const result = await supplyChain.fetchItem.call(sku)
+
+        // refactored to pass travis-ci tests
+        if (tx.logs[0].event === "Received") {
+            sku = tx.logs[0].args.sku.toString(10)
+            eventEmitted = true
+        }
 
         assert.equal(eventEmitted, true, 'adding an item should emit a Shipped event')
         assert.equal(result[3].toString(10), 3, 'the state of the item should be "Received", which should be declared fourth in the State Enum')
