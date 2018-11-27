@@ -15,22 +15,15 @@ contract('SupplyChain', function(accounts) {
 
         var eventEmitted = false
 
-        /* Commented- unused because it doesn't work on Travis
         var event = supplyChain.ForSale()
         await event.watch((err, res) => {
             sku = res.args.sku.toString(10)
             eventEmitted = true
         })
-        */
-        
+
         const name = "book"
 
-        const tx = await supplyChain.addItem(name, price, {from: alice})
-
-        if (tx.logs[0].event === "ForSale") {
-                sku = tx.logs[0].args.sku.toString(10)
-                eventEmitted = true
-        }
+        await supplyChain.addItem(name, price, {from: alice})
 
         const result = await supplyChain.fetchItem.call(sku)
 
